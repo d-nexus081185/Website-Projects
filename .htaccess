@@ -1,0 +1,43 @@
+# =========================================================
+# Veridale Health: Apache / cPanel configuration
+# Upload this file to the site's document root (same folder as index.html).
+# The same file is safe on staging AND production: the noindex header below
+# only fires when the hostname starts with "test.", so production is never noindexed.
+# =========================================================
+
+# ---------- Custom 404 page ----------
+ErrorDocument 404 /404.html
+
+# ---------- Keep staging out of search engines ----------
+# Sends "X-Robots-Tag: noindex, nofollow" on every response from test.veridalehealth.com
+# (and any other test.* host). Production (veridalehealth.com) is unaffected.
+# Uses SetEnvIf + mod_headers, which work on both Apache and LiteSpeed (common on cPanel).
+SetEnvIfNoCase Host ^test\. VERIDALE_STAGING
+<IfModule mod_headers.c>
+  Header always set X-Robots-Tag "noindex, nofollow" env=VERIDALE_STAGING
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+  Header always set Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=()"
+  Header always set X-Frame-Options "SAMEORIGIN"
+  Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains" "expr=%{HTTPS} == 'on'"
+</IfModule>
+
+# ---------- Correct type for the web app manifest ----------
+AddType application/manifest+json .webmanifest
+
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+
+  # /index.html -> / (the canonical home URL). THE_REQUEST only matches what the
+  # visitor typed, so Apache's internal DirectoryIndex lookup does not loop.
+  RewriteCond %{THE_REQUEST} \s/+index\.html[\s?] [NC]
+  RewriteRule ^index\.html$ / [R=301,L]
+
+  # ---------- Force HTTPS and the canonical production host ----------
+  # The host condition prevents a staging hostname from redirecting to production.
+  RewriteCond %{HTTP_HOST} ^www\.veridalehealth\.com$ [NC]
+  RewriteRule ^ https://veridalehealth.com%{REQUEST_URI} [R=301,L,NE]
+  RewriteCond %{HTTPS} !=on
+  RewriteCond %{HTTP_HOST} ^veridalehealth\.com$ [NC]
+  RewriteRule ^ https://veridalehealth.com%{REQUEST_URI} [R=301,L,NE]
+</IfModule>

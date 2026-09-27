@@ -1,0 +1,14 @@
+{
+  "name": "Veridale Health",
+  "short_name": "Veridale",
+  "description": "Psychiatric Nursing and Behavioral Health",
+  "start_url": "/",
+  "scope": "/",
+  "display": "browser",
+  "background_color": "#FFFFFF",
+  "theme_color": "#0C2E64",
+  "icons": [
+    { "src": "/assets/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/assets/icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}
